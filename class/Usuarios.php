@@ -5,8 +5,13 @@ class Usuarios {
     private $deslogin;
     private $dessenha;
     private $dtcadastro;
+    
+    function __construct($deslogin = '', $dessenha = '') {
+        $this->deslogin = $deslogin;
+        $this->dessenha = $dessenha;
+    }
 
-    public function getIdusuarios()//PEGA O VALOR DO IDUSUARIO
+        public function getIdusuarios()//PEGA O VALOR DO IDUSUARIO
     {
         return $this->idusuarios;
     }
@@ -46,12 +51,21 @@ class Usuarios {
         $this->dtcadastro = $dtcadastro;
     }
 
+    
+    //DADOS DOS SET DOS USUARIOS
+    public function setData($data) {
+        $this->setIdusuarios($data['idusuario']);
+        $this->setDeslogin($data['deslogin']);
+        $this->setDessenha($data['dessenha']);
+        $this->setDtcadastro(new DateTime($data['dtcadastro']));
+    }
+    
     //METODO PARA PEGAR O ID E RETORNAR OS DADOS DO BANCO
     //PREENCHE OS ATRIBUTOS COM OS DADOS QUE ESTÃO NO BANCO DE DADOS
     //USANDO OS METODOS SET
     public function loadById($id){
-        $slq = new Sql("localhost", "dbphp7", "root", "");
-        $results = $slq->select("SELECT * FROM tb_usuarios WHERE idusuario = :id", array(":id" => "$id"));
+        $sql = new Sql("localhost", "dbphp7", "root", "");
+        $results = $sql->select("SELECT * FROM tb_usuarios WHERE idusuario = :id", array(":id" => "$id"));
         if(count($results) > 0){
             $row = $results[0];
             $this->setIdusuarios($row['idusuario']);
@@ -59,8 +73,6 @@ class Usuarios {
             $this->setDessenha($row['dessenha']);
             $this->setDtcadastro(new DateTime($row['dtcadastro']));
         }
-
-
     }
 
     //METADO MAGICO PARA TRANSFORMAR O OBJETO EM STRING
@@ -76,33 +88,77 @@ class Usuarios {
         ));
     }
     
+    
+    //METODO DE PESQUISA
     static function search($login) {
-        $slq = new Sql("localhost", "dbphp7", "root", "");
-        return $slq->select("SELECT * FROM tb_usuarios WHERE deslogin LIKE :SEARCH ORDER BY deslogin", array(
+        $sql = new Sql("localhost", "dbphp7", "root", "");
+        return $sql->select("SELECT * FROM tb_usuarios WHERE deslogin LIKE :SEARCH ORDER BY deslogin", array(
             ':SEARCH' => "%".$login."%"
         ));
     }
-
+    
+    
+    //EXIBE LISTA DO BANCO POR ONDEM ALFABETICA DE LOGIN
     static function getList(){
-        $slq = new Sql("localhost", "dbphp7", "root", "");
-        return $slq ->select("SELECT * FROM tb_usuarios ORDER BY deslogin");
+        $sql = new Sql("localhost", "dbphp7", "root", "");
+        return $sql ->select("SELECT * FROM tb_usuarios ORDER BY deslogin");
     }
     
+    
+    //CONFERE LOGIN E SENHA NO BANCO
     public function login($login, $pass) {
-        $slq = new Sql("localhost", "dbphp7", "root", "");
-        $results = $slq->select("SELECT * FROM tb_usuarios WHERE deslogin = :LOGIN AND dessenha = :PASS", array(
+        $sql = new Sql("localhost", "dbphp7", "root", "");
+        $results = $sql->select("SELECT * FROM tb_usuarios WHERE deslogin = :LOGIN AND dessenha = :PASS", array(
             ":LOGIN" => $login,
             ":PASS" => $pass
         ));
         
         if (count($results) > 0){
-            $row = $results[0];
-            $this->setIdusuarios($row['idusuario']);
-            $this->setDeslogin($row['deslogin']);
-            $this->setDessenha($row['dessenha']);
-            $this->setDtcadastro(new DateTime($row['dtcadastro']));
+            $data = $results[0];
+            $this->setData($results[0]);
         } else {
             throw new Exception("Login e/ou senha incorreto!");
         }
+    }
+    
+    //INSERT
+    public function insert() {
+        $sql = new Sql("localhost", "dbphp7", "root", "");
+        $sql->query("INSERT INTO tb_usuarios (deslogin, dessenha) VALUES (:LOGIN, :PASS)", array(
+            ":LOGIN" => $this->getDeslogin(),
+            ":PASS" => $this->getDessenha()
+        ));
+        
+    }
+    
+    
+    //INSERT PROCEDURE
+    public function insertProcedure() {
+        $sql = new Sql("localhost", "dbphp7", "root", "");
+        $results = $sql->select("CALL sp_usuarios_insert (:LOGIN, :PASS)", array(
+            ":LOGIN" => $this->getDeslogin(),
+            ":PASS" => $this->getDessenha()
+        ));
+        if(count($results) > 0){
+            $this->setData($results[0]);
+        }else{
+            echo 'batata';
+        }
+    }
+    
+    //UPDATE
+    public function update( $id, $login, $pass) {
+        
+        
+        $this->setDeslogin($login);
+        $this->setDessenha($pass);
+        $this->setIdusuarios($id);
+        $sql = new Sql("localhost", "dbphp7", "root", "");
+        
+        $sql->query("UPDATE tb_usuarios SET deslogin = :LOGIN, dessenha = :PASS WHERE idusuario = :ID", array(
+            ":LOGIN"=> $this->getDeslogin(),
+            ":PASS"=> $this->getDessenha(),
+            ":ID"=> $this->getIdusuarios()
+        ));
     }
 }

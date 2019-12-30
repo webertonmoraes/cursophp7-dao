@@ -29,10 +29,6 @@ class Sql extends PDO {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function insert($query, $params = array()):array
-    {
-        return $this->query($query, $params);
-    }
 
 }
 
