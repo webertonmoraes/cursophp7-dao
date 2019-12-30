@@ -75,4 +75,34 @@ class Usuarios {
             "dtcadastro" => $this->getDtcadastro()->format("d-m-Y H:i:s")
         ));
     }
+    
+    static function search($login) {
+        $slq = new Sql("localhost", "dbphp7", "root", "");
+        return $slq->select("SELECT * FROM tb_usuarios WHERE deslogin LIKE :SEARCH ORDER BY deslogin", array(
+            ':SEARCH' => "%".$login."%"
+        ));
+    }
+
+    static function getList(){
+        $slq = new Sql("localhost", "dbphp7", "root", "");
+        return $slq ->select("SELECT * FROM tb_usuarios ORDER BY deslogin");
+    }
+    
+    public function login($login, $pass) {
+        $slq = new Sql("localhost", "dbphp7", "root", "");
+        $results = $slq->select("SELECT * FROM tb_usuarios WHERE deslogin = :LOGIN AND dessenha = :PASS", array(
+            ":LOGIN" => $login,
+            ":PASS" => $pass
+        ));
+        
+        if (count($results) > 0){
+            $row = $results[0];
+            $this->setIdusuarios($row['idusuario']);
+            $this->setDeslogin($row['deslogin']);
+            $this->setDessenha($row['dessenha']);
+            $this->setDtcadastro(new DateTime($row['dtcadastro']));
+        } else {
+            throw new Exception("Login e/ou senha incorreto!");
+        }
+    }
 }

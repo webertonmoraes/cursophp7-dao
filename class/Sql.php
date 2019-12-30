@@ -31,7 +31,7 @@ class Sql extends PDO {
 
     public function insert($query, $params = array()):array
     {
-        $stmt = $this->query($query, $params);
+        return $this->query($query, $params);
     }
 
 }
