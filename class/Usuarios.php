@@ -67,11 +67,7 @@ class Usuarios {
         $sql = new Sql("localhost", "dbphp7", "root", "");
         $results = $sql->select("SELECT * FROM tb_usuarios WHERE idusuario = :id", array(":id" => "$id"));
         if(count($results) > 0){
-            $row = $results[0];
-            $this->setIdusuarios($row['idusuario']);
-            $this->setDeslogin($row['deslogin']);
-            $this->setDessenha($row['dessenha']);
-            $this->setDtcadastro(new DateTime($row['dtcadastro']));
+            $this->setData($results[0]);
         }
     }
 
@@ -147,12 +143,11 @@ class Usuarios {
     }
     
     //UPDATE
-    public function update( $id, $login, $pass) {
+    public function update($login, $pass) {
         
         
         $this->setDeslogin($login);
         $this->setDessenha($pass);
-        $this->setIdusuarios($id);
         $sql = new Sql("localhost", "dbphp7", "root", "");
         
         $sql->query("UPDATE tb_usuarios SET deslogin = :LOGIN, dessenha = :PASS WHERE idusuario = :ID", array(
@@ -160,5 +155,18 @@ class Usuarios {
             ":PASS"=> $this->getDessenha(),
             ":ID"=> $this->getIdusuarios()
         ));
+    }
+    
+    //DELETE
+    public function delete() {
+        $sql = new Sql("localhost", "dbphp7", "root", "");
+        $sql->query("DELETE FROM tb_usuarios WHERE idusuario = :ID", array(
+            ":ID" => $this->getIdusuarios()
+        ));
+        
+        $this->setIdusuarios(0);
+        $this->setDeslogin('');
+        $this->setDessenha('');
+        $this->setDtcadastro(new DateTime());
     }
 }

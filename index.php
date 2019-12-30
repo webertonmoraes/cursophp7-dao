@@ -25,9 +25,10 @@ require_once("config.php");
 
 //ATUALIZAR USUARIO
 $user = new Usuarios();
-$user->update(12, 'Chico Xavier', '123456');
 
-$user->loadById(11);
+
+$user->loadById(12);
+$user->delete();
 echo $user;
 
 
